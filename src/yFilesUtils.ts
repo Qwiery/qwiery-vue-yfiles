@@ -76,7 +76,7 @@ export class yFilesUtils {
 		if (text) {
 			// resize the node to fit the label
 			const label = graphComponent.graph.addLabel(node, text);
-			yFilesUtils.fitNodeToLabel(node, label, graphComponent);
+			yFilesUtils.fitNodeToLabel(node, text, graphComponent);
 		}
 
 		return node;
