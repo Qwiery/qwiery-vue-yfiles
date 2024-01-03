@@ -28,7 +28,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "vite --mode development",
+    "dev": "vite",
     "test": "vitest run",
     "build": "vite build",
     "preview": "vite preview"

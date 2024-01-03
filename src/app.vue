@@ -18,6 +18,8 @@
 
 		<div class="btn"><label for="edgeCreation">Edge Creation</label>
 			<input id="edgeCreation" type="checkbox" @click="toggleEdgeCreation()"></div>
+		<div class="btn"><label for="nodeCreation">Node Creation</label>
+			<input id="nodeCreation" type="checkbox" @click="toggleNodeCreation()"></div>
 
 		<span style="margin-left: 20px;">Layout: </span>
 		<button style="margin-left: 20px" class="btn cyan" @click="layout('concentric')">Concentric</button>
@@ -35,6 +37,7 @@
 	import _ from "lodash";
 
 	let edgeCreation = false;
+	let nodeCreation = false;
 	const viewer = ref(null);
 	let view: IGraphView;
 	let license = ref<any>(null);
@@ -52,6 +55,12 @@
 		switch (name) {
 			case "organic":
 				view.layout(name, { minimumNodeDistance: 100 });
+				break;
+			case "concentric":
+				view.layout(name, {});
+				break;
+			case "hierarchical":
+				view.layout(name, {});
 				break;
 		}
 
@@ -105,12 +114,13 @@
 	 * Toggle edge creation mode
 	 */
 	function toggleEdgeCreation() {
-		if (edgeCreation) {
-			view.edgeCreation(false);
-		} else {
-			view.edgeCreation(true);
-		}
 		edgeCreation = !edgeCreation;
+		view.edgeCreation(edgeCreation);
+	}
+
+	function toggleNodeCreation() {
+		nodeCreation = !nodeCreation;
+		view.nodeCreation(nodeCreation);
 	}
 
 	/**
@@ -125,16 +135,20 @@
 	}
 
 	function augment() {
-		const id1 = Utils.id(), id2 = Utils.id();
+		const id1 = Math.random() < 0.3 ? "a" : Utils.id(), id2 = Math.random() < 0.3 ? "b" : Utils.id();
 		view.augment({
-			nodes: [{
-				id: id1,
-			},
+			nodes: [
+				{
+					id: id1,
+					name: Utils.randomId(4),
+				},
 				{
 					id: id2,
+					name: Utils.randomId(4),
 				}],
 			edges: [
 				{
+					id: Utils.id(),
 					sourceId: id1,
 					targetId: id2,
 				},
@@ -183,6 +197,8 @@
 		position: relative;
 		border: 1px solid silver;
 		border-radius: 5px;
+		overflow: hidden;
+
 	}
 
 	.toolbar {
@@ -198,7 +214,6 @@
 		height: 100vh;
 		width: 100vw;
 		position: absolute;
-
 	}
 
 	.btn {

@@ -1,6 +1,6 @@
 import _ from "lodash";
-import { Utils } from "@orbifold/utils";
-import { DefaultLabelStyle, GraphComponent, IEdge, INode, Rect, Size, TextRenderSupport } from "yfiles";
+import { IQwieryEdge, Utils } from "@orbifold/utils";
+import { DefaultLabelStyle, GraphComponent, IEdge, IModelItem, INode, Rect, Size, TextRenderSupport } from "yfiles";
 import { GraphLike } from "@orbifold/utils";
 
 export class yFilesUtils {
@@ -16,12 +16,14 @@ export class yFilesUtils {
 			const node = yFilesUtils.createNode(n, graphComponent);
 			nodeDic[n.id] = node;
 		}
-		for (const e of g.edges) {
-			const sourceNode = nodeDic[e.sourceId];
-			const targetNode = nodeDic[e.targetId];
-			if (sourceNode && targetNode) {
-				const tag = yFilesUtils.toEdgeTag(e);
-				graphComponent.graph.createEdge({ source: sourceNode, target: targetNode, tag });
+		if (g.edges) {
+			for (const e of g.edges) {
+				const sourceNode = nodeDic[e.sourceId];
+				const targetNode = nodeDic[e.targetId];
+				if (sourceNode && targetNode) {
+					const tag = yFilesUtils.toEdgeTag(e);
+					graphComponent.graph.createEdge({ source: sourceNode, target: targetNode, tag });
+				}
 			}
 		}
 	}
@@ -61,9 +63,9 @@ export class yFilesUtils {
 		}
 		_.assign(tag, d);
 		const node = graphComponent.graph.createNodeAt({ location, tag });
-		let text=null;
+		let text = null;
 		if (!Utils.isEmpty(d.name)) {
-			text = d.name
+			text = d.name;
 
 		} else {
 			if (labels.length > 0) {
@@ -71,17 +73,47 @@ export class yFilesUtils {
 				text = labels[0];
 			}
 		}
-		if(text){
+		if (text) {
 			// resize the node to fit the label
 			const label = graphComponent.graph.addLabel(node, text);
-			const size = TextRenderSupport.measureText({
-				text,
-				font:new DefaultLabelStyle().font,
-			})
-			graphComponent.graph.setNodeLayout(node, Rect.fromCenter(node.layout.center, size).getEnlarged([5,10]));
+			yFilesUtils.fitNodeToLabel(node, label, graphComponent);
 		}
 
 		return node;
+	}
+	static fitNodeToLabel(node, text, graphComponent) {
+		const size = TextRenderSupport.measureText({
+			text,
+			font: new DefaultLabelStyle().font,
+		});
+		graphComponent.graph.setNodeLayout(node, Rect.fromCenter(node.layout.center, size).getEnlarged([5, 10]));
+	}
+
+	static createEdge(e: any, graphComponent: GraphComponent) {
+		if (!_.isPlainObject(e)) {
+			throw new Error("Expect plain object.");
+		}
+		const tag = {
+			id: Utils.id(),
+		};
+		if (Utils.isEmpty(e.sourceId)) {
+			throw new Error("The sourceId is missing.");
+		}
+		if (Utils.isEmpty(e.targetId)) {
+			throw new Error("The targetId is missing.");
+		}
+		_.assign(tag, e.tag);
+		const sourceNode = graphComponent.graph.nodes.find(n => n.tag.id === e.sourceId);
+		const targetNode = graphComponent.graph.nodes.find(n => n.tag.id === e.targetId);
+		if (!sourceNode) {
+			throw new Error(`Cannot find the source node with id '${e.sourceId}'.`);
+		}
+		if (!targetNode) {
+			throw new Error(`Cannot find the target node with id '${e.targetId}'.`);
+		}
+		graphComponent.graph.createEdge({ source: sourceNode, target: targetNode, tag });
+		return tag.id;
+
 	}
 
 	static toEdgeTag(e) {
@@ -93,17 +125,25 @@ export class yFilesUtils {
 		return tag;
 	}
 
-	static toPlain(obj){
-		if(Utils.isEmpty(obj)){
+	/**
+	 * Converts the given object to a plain Qwiery object (node or edge).
+	 * @param obj
+	 * @return {any}
+	 */
+	static toPlain(obj) {
+		if (Utils.isEmpty(obj)) {
 			return null;
 		}
-		if(_.isArray(obj)){
-			return obj.map(o=>yFilesUtils.toPlain(o));
+		if (_.isArray(obj)) {
+			return obj.map(o => yFilesUtils.toPlain(o));
 		}
-		if(INode.isInstance(obj)){
-			return obj.tag
+		if (!IModelItem.isInstance(obj)) {
+			throw new Error("Expect an yFiles IModelItem (INode, IEdge etc..).");
 		}
-		if(IEdge.isInstance(obj)){
+		if (INode.isInstance(obj)) {
+			return obj.tag;
+		}
+		if (IEdge.isInstance(obj)) {
 			const e = <IEdge>obj;
 			const p = _.clone(e.tag);
 			p.sourceId = e.sourceNode.tag.id;
@@ -111,6 +151,7 @@ export class yFilesUtils {
 			return p;
 		}
 	}
+
 	/**
 	 *
 	 * @param rawNode {*} The raw node to extend.
@@ -141,4 +182,6 @@ export class yFilesUtils {
 		}
 		return rawNode;
 	}
+
+
 }
