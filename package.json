@@ -19,7 +19,7 @@
     "node": ">=21"
   },
   "private": false,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -46,6 +46,6 @@
     "vitest": "^1.1.0"
   },
   "peerDependencies": {
-    "yfiles": "make sure you have yFiles installed"
+    "yfiles": "^0.9.95"
   }
 }

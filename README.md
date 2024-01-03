@@ -8,11 +8,22 @@ If you don't have a license you can use [the free Cytoscape version](https://qwi
 
 ## Installation
 
+Assuming you have a Vue 3 application, install the component with
+
 ```bash
 npm i @orbifold/vue-yfiles
 ```
 
 and make sure you also have the yFiles library installed. You can [download it from the yWorks website](https://www.yworks.com/products/yfiles-for-html/evaluate).
+
+If you don't have a Vue app, use 
+
+```bash
+npx nuxi init myapp
+cd myapp
+npm i <the path to the yFiles tgz package>
+npm i @orbifold/vue-yfiles
+```
 
 Assign the license via the `license` prop like so:
 
@@ -31,6 +42,7 @@ const license = {
 ```
 
 See the demo application (`npm run dev`) for a complete example. 
+
  
 
 ## IGraphView
